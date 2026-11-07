@@ -1,0 +1,5 @@
+# Tracked GitHub repositories, one per line, in owner/repo form.
+# These are the default tracked repositories. Edit this file to track others.
+python/cpython
+facebook/react
+microsoft/vscode

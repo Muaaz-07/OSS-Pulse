@@ -1,0 +1,22 @@
+<article class="repo-card">
+  <div class="rc-head"><span class="rc-dot" style="background:{{ r['color'] }}"></span><span class="rc-name">{{ r['full_name'] }}</span></div>
+  {% if r['desc'] %}<div class="rc-desc">{{ r['desc'] }}</div>{% endif %}
+  <div class="rc-stats">
+    <span>Language<br><b>{{ r['language'] or '—' }}</b></span>
+    <span>Stars<br><b>{{ "{:,}".format(r['stars']) }}</b></span>
+    {% if mode == 'releases' %}
+      <span>Avg gap<br><b>{{ (r['avg_gap'] ~ ' days') if r['avg_gap'] is not none else 'n/a' }}</b></span>
+      <span>Latest<br>{% if r['latest_tag'] %}<span class="mono">{{ r['latest_tag'] }}</span> <span class="pill {{ 'dev' if r['releases_list'][0]['kind'] == 'Dev' else 'stable' }}">{{ r['releases_list'][0]['kind'] }}</span>{% else %}—{% endif %}</span>
+    {% elif mode == 'issues' %}
+      <span>Open / closed<br><b>{{ r['open'] }} / {{ r['closed'] }}</b></span>
+      <span>Avg close<br><b>{{ r['close_avg_text'] }}</b></span>
+    {% else %}
+      <span>Releases<br><b>{{ r['releases'] }}</b></span>
+      <span>Issues<br><b>{{ r['issues'] }}</b></span>
+    {% endif %}
+  </div>
+  <div class="rc-actions">
+    <a class="btn quiet" href="/repo/{{ r['full_name'] }}" style="text-decoration:none">View</a>
+    <form method="post" action="/delete/{{ r['full_name'] }}" style="display:inline"><button class="btn quiet danger" type="submit" data-arm-delete>Remove</button></form>
+  </div>
+</article>

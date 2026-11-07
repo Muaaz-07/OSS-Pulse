@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Issues{% endblock %}
+{% block page_title %}Issues{% endblock %}
+{% block search_action %}/issues{% endblock %}
+{% block search_placeholder %}Search issues — repo or title…{% endblock %}
+{% block content %}
+<p class="summary"><b>{{ iss_totals['issues'] }}</b> issues in the recent sample across <b>{{ grid_total }}</b> repositories · <b>{{ iss_totals['open'] }}</b> open ({{ (iss_totals['open'] * 100 // iss_totals['issues']) if iss_totals['issues'] else 0 }}%) · <b>{{ iss_totals['closed'] }}</b> closed.</p>
+<div class="grid2 chart-pair issues-charts">
+  <section class="block full-width">
+    <h3>Open vs closed issues</h3>
+    {{ stacked|safe }}
+  </section>
+</div>
+<div class="section-head"><h2>Issue health by repository</h2><span class="small">{{ grid_total }} of {{ totals['repos'] }}</span></div>
+<div class="repo-grid">
+  {% for r in summary %}{% set mode = 'issues' %}{% include 'repo_card.html' %}{% else %}<div class="empty" style="grid-column:1/-1">No repositories match the search.</div>{% endfor %}
+</div>
+{% if gpages > 1 %}
+<div class="pager"><a class="btn" href="/issues?q={{ q }}&page={{ page }}&rpage={{ rpage - 1 }}" {% if rpage <= 1 %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>← Prev</a><span class="small">Page {{ rpage }} of {{ gpages }} · {{ grid_total }} repositories</span><a class="btn" href="/issues?q={{ q }}&page={{ page }}&rpage={{ rpage + 1 }}" {% if rpage >= gpages %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>Next →</a></div>
+{% endif %}
+<div class="section-head"><h2>Recent issues</h2><span class="small">{{ total }} shown</span></div>
+<section class="block">
+  {% for e in issues %}
+    <div class="issue-row"><span class="pill {{ 'closed' if e['state'] == 'closed' else 'open' }}">{{ 'Closed' if e['state'] == 'closed' else 'Open' }}</span><span class="ititle"><a href="{{ e['html_url'] }}" target="_blank" rel="noopener">{{ e['title'] }}</a></span><span style="color:var(--muted);font-size:13px;flex:none">{{ e['repo']['full_name'] }}</span><span style="color:var(--muted);font-size:13px;flex:none">{{ e['date'] }}</span></div>
+  {% else %}
+    {% if q %}<div class="empty">No issues match “{{ q }}” — try a repo name like vscode, or a word from an issue title.</div>
+    {% else %}<div class="empty">No issues captured yet.</div>{% endif %}
+  {% endfor %}
+  {% if pages > 1 %}
+  <div class="pager"><a class="btn" href="/issues?q={{ q }}&page={{ page - 1 }}&rpage={{ rpage }}" {% if page <= 1 %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>← Prev</a><span class="small">Page {{ page }} of {{ pages }} · {{ total }} issues</span><a class="btn" href="/issues?q={{ q }}&page={{ page + 1 }}&rpage={{ rpage }}" {% if page >= pages %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>Next →</a></div>
+  {% endif %}
+</section>
+{% endblock %}

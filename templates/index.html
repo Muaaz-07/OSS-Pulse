@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block search_placeholder %}Search repositories…{% endblock %}
+{% block content %}
+<p class="summary"><b>{{ totals['repos'] }}</b> repositories · <b>{{ totals['releases'] }}</b> releases · <b>{{ totals['issues'] }}</b> issues in the recent sample, <b>{{ totals['open'] }}</b> of them open.{% if q %}<br>Filtered to <b>{{ total }}</b> matching “{{ q }}”.{% endif %}</p>
+<div class="grid2 chart-pair">
+  <section class="block">
+    <h3>Releases by repository</h3>
+    {{ dash_rel_svg|safe }}
+  </section>
+  <section class="block">
+    <h3>Issues by repository</h3>
+    {{ dash_iss_bars|safe }}
+  </section>
+</div>
+<div class="section-head"><h2>Repositories</h2><span class="small">{{ total }} of {{ all_summary|length }}</span></div>
+<div class="repo-grid">
+  {% for r in summary %}{% set mode = 'dash' %}{% include 'repo_card.html' %}{% else %}<div class="empty" style="grid-column:1/-1">No repositories match.</div>{% endfor %}
+</div>
+{% if pages > 1 %}
+<div class="pager"><a class="btn" href="/?q={{ q }}&page={{ page - 1 }}" {% if page <= 1 %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>← Prev</a><span class="small">Page {{ page }} of {{ pages }} · {{ total }} repositories</span><a class="btn" href="/?q={{ q }}&page={{ page + 1 }}" {% if page >= pages %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>Next →</a></div>
+{% else %}
+<p class="small" style="margin:16px 0 0">Showing all {{ total }} repositories.</p>
+{% endif %}
+<div class="empty" {% if total %}style="display:none"{% endif %}>No repositories match. Clear the search or add a repository.</div>
+{% endblock %}

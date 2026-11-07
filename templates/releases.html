@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Releases{% endblock %}
+{% block page_title %}Releases{% endblock %}
+{% block search_action %}/releases{% endblock %}
+{% block search_placeholder %}Search releases — repo or tag…{% endblock %}
+{% block content %}
+<p class="summary"><b>{{ totals['releases'] }}</b> releases across <b>{{ repo_count }}</b> repositories{% if fastest %} · fastest cadence: <b>{{ fastest['full_name'].split('/')[-1] }}</b>, every {{ fastest['avg_gap'] }} days on average{% endif %}.</p>
+<div class="grid2 chart-pair">
+  <section class="block">
+    <h3>Average time between releases</h3>
+    {{ gap_bars|safe }}
+  </section>
+  <section class="block latest-releases">
+    <h3>Latest releases</h3>
+    {% for e in releases %}
+      <div class="latest-row"><div style="min-width:0"><a href="{{ e['html_url'] or ('https://github.com/' ~ e['repo']['full_name'] ~ '/releases/tag/' ~ e['tag']) }}" target="_blank" rel="noopener"><b class="mono" style="font-weight:600">{{ e['tag'] }}</b></a> <span style="color:var(--muted)">{{ e['repo']['full_name'] }}</span></div><span class="pill {{ 'dev' if e['kind'] == 'Dev' else 'stable' }}">{{ e['kind'] }}</span><div class="when">{{ e['date'] }}</div></div>
+    {% else %}
+      <div class="empty">No releases match the search.</div>
+    {% endfor %}
+  </section>
+</div>
+<div class="section-head"><h2>Release activity by repository</h2><span class="small">{{ grid_total }} of {{ repo_count }}</span></div>
+<div class="repo-grid">
+  {% for r in summary %}{% set mode = 'releases' %}{% include 'repo_card.html' %}{% else %}<div class="empty" style="grid-column:1/-1">No repositories match the search.</div>{% endfor %}
+</div>
+{% if gpages > 1 %}
+<div class="pager"><a class="btn" href="/releases?q={{ q }}&page={{ page }}&rpage={{ rpage - 1 }}" {% if rpage <= 1 %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>← Prev</a><span class="small">Page {{ rpage }} of {{ gpages }} · {{ grid_total }} repositories</span><a class="btn" href="/releases?q={{ q }}&page={{ page }}&rpage={{ rpage + 1 }}" {% if rpage >= gpages %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>Next →</a></div>
+{% endif %}
+<div class="empty" {% if grid_total %}style="display:none"{% endif %}>No repositories match the search.</div>
+{% endblock %}

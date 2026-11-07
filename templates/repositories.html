@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Repositories{% endblock %}
+{% block page_title %}Repositories{% endblock %}
+{% block search_action %}/repositories{% endblock %}
+{% block search_placeholder %}Search repositories…{% endblock %}
+{% block content %}
+<div class="card" id="addCard">
+  <h3>Add a repository</h3>
+  <form class="add-form" method="post" action="/add">
+    <input id="addInput" type="text" name="repo" placeholder="owner/repo or https://github.com/owner/repo" aria-label="Repository as owner/repo or full GitHub URL" autocomplete="off" spellcheck="false"/>
+    <button class="btn primary" type="submit">Add repository</button>
+  </form>
+  <p class="small" style="margin:14px 0 0">Added repositories are saved here until deleted.</p>
+</div>
+
+<div class="section-head"><h2>All tracked repositories</h2><span class="small">{{ total }} of {{ totals['repos'] }}</span></div>
+<div class="repo-grid">
+  {% for r in summary %}{% set mode = 'dash' %}{% include 'repo_card.html' %}{% else %}<div class="empty" style="grid-column:1/-1">No repositories match the search.</div>{% endfor %}
+</div>
+{% if pages > 1 %}
+<div class="pager"><a class="btn" href="/repositories?q={{ q }}&page={{ page - 1 }}" {% if page <= 1 %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>← Prev</a><span class="small">Page {{ page }} of {{ pages }} · {{ total }} repositories</span><a class="btn" href="/repositories?q={{ q }}&page={{ page + 1 }}" {% if page >= pages %}aria-disabled="true" style="opacity:.55;pointer-events:none"{% endif %}>Next →</a></div>
+{% else %}
+<p class="small" style="margin:16px 0 0">Showing all {{ total }} repositories.</p>
+{% endif %}
+{% endblock %}

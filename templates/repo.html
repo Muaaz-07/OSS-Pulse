@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ repo['full_name'] }}{% endblock %}
+{% block page_title %}{{ repo['full_name'] }}{% endblock %}
+{% block search_action %}/repositories{% endblock %}
+{% block search_placeholder %}Search repositories…{% endblock %}
+{% block content %}
+<div class="card" id="detailCard">
+  <div class="detail-head">
+    <div style="flex:1;min-width:240px"><h2>{{ repo['full_name'] }}</h2><p>{{ repo['description'] or '' }}</p></div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap">
+      <a class="btn quiet" href="{{ repo['html_url'] }}" target="_blank" rel="noopener" style="text-decoration:none">Open on GitHub ↗</a>
+      <form method="post" action="/delete/{{ repo['full_name'] }}" style="display:inline"><button class="btn quiet danger" type="submit" data-arm-delete>Remove</button></form>
+    </div>
+  </div>
+  <div class="picks" role="group" aria-label="Choose repository">
+    {% for x in switcher_repos %}<a class="btn{{ ' active' if x['full_name'] == repo['full_name'] else '' }}" href="/repo/{{ x['full_name'] }}">{{ x['full_name'] }}</a>{% endfor %}
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="label">Stars</div><div class="value">{{ "{:,}".format(repo['stargazers_count']) }}</div></div>
+    <div class="stat"><div class="label">Forks</div><div class="value">{{ "{:,}".format(repo['forks_count']) }}</div></div>
+    <div class="stat"><div class="label">Language</div><div class="value">{{ repo['language'] or '—' }}</div></div>
+    <div class="stat"><div class="label">Open issues (total)</div><div class="value">{{ "{:,}".format(repo['open_issues_count']) }}</div></div>
+    <div class="stat"><div class="label">Latest release</div><div class="value">{{ detail['latest_tag'] or '—' }}</div></div>
+    <div class="stat"><div class="label">Avg gap between releases</div><div class="value">{{ (detail['avg_gap'] ~ ' days') if detail['avg_gap'] is not none else '—' }}</div></div>
+  </div>
+  <div class="grid2" style="margin-top:22px;margin-bottom:0">
+    <div>
+      <h3 style="margin:0 0 10px;font-size:15.5px">Insights</h3>
+      <ul class="insight-list">{% for line in insights %}<li>{{ line }}</li>{% endfor %}</ul>
+    </div>
+    <div>
+      <h3 style="margin:0 0 12px;font-size:15.5px">Releases by month</h3>
+      {% if months_bars %}{{ months_bars|safe }}{% else %}<p style="font-size:14px;color:var(--ink2);margin:6px 0">No GitHub releases.</p>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="section-head"><h2>Recent releases</h2>{% if releases|length > 3 %}<button class="btn quiet" type="button" data-expand-target="releases-full" aria-expanded="false">View all</button>{% endif %}</div>
+<section class="block">
+  {% for r in releases[:3] %}
+    <div class="latest-row"><div style="min-width:0"><a href="{{ r['html_url'] or ('https://github.com/' ~ repo['full_name'] ~ '/releases/tag/' ~ r['tag_name']) }}" target="_blank" rel="noopener"><b class="mono" style="font-weight:600">{{ r['tag_name'] }}</b></a></div><span class="pill {{ 'dev' if r['kind'] == 'Dev' else 'stable' }}">{{ r['kind'] }}</span><div class="when">{{ r['published_at'] }}</div></div>
+  {% else %}
+    <div class="empty">No releases.</div>
+  {% endfor %}
+  <div id="releases-full" hidden>
+  {% for r in releases[3:] %}
+    <div class="latest-row"><div style="min-width:0"><a href="{{ r['html_url'] or ('https://github.com/' ~ repo['full_name'] ~ '/releases/tag/' ~ r['tag_name']) }}" target="_blank" rel="noopener"><b class="mono" style="font-weight:600">{{ r['tag_name'] }}</b></a></div><span class="pill {{ 'dev' if r['kind'] == 'Dev' else 'stable' }}">{{ r['kind'] }}</span><div class="when">{{ r['published_at'] }}</div></div>
+  {% endfor %}
+  </div>
+</section>
+
+<div class="section-head"><h2>Recent issues</h2>{% if issues|length > 3 %}<button class="btn quiet" type="button" data-expand-target="issues-full" aria-expanded="false">View all</button>{% endif %}</div>
+<section class="block">
+  {% for i in issues[:3] %}
+    <div class="issue-row"><span class="pill {{ 'closed' if i['state'] == 'closed' else 'open' }}">{{ 'Closed' if i['state'] == 'closed' else 'Open' }}</span><span class="ititle"><a href="{{ i['html_url'] or ('https://github.com/' ~ repo['full_name'] ~ '/issues/' ~ i['number']) }}" target="_blank" rel="noopener">{{ i['title'] }}</a></span><span style="color:var(--muted);font-size:13px;flex:none">{{ (i['created_at']|string)[:10] }}</span></div>
+  {% else %}
+    <div class="empty">No issues in the fetched sample.</div>
+  {% endfor %}
+  <div id="issues-full" hidden>
+  {% for i in issues[3:] %}
+    <div class="issue-row"><span class="pill {{ 'closed' if i['state'] == 'closed' else 'open' }}">{{ 'Closed' if i['state'] == 'closed' else 'Open' }}</span><span class="ititle"><a href="{{ i['html_url'] or ('https://github.com/' ~ repo['full_name'] ~ '/issues/' ~ i['number']) }}" target="_blank" rel="noopener">{{ i['title'] }}</a></span><span style="color:var(--muted);font-size:13px;flex:none">{{ (i['created_at']|string)[:10] }}</span></div>
+  {% endfor %}
+  </div>
+</section>
+<script>
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-expand-target]');
+    if (!btn) return;
+    var target = document.getElementById(btn.getAttribute('data-expand-target'));
+    if (!target) return;
+    var expanded = target.hidden === false;
+    target.hidden = expanded;
+    btn.textContent = expanded ? 'View all' : 'Show less';
+    btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+  });
+</script>
+{% endblock %}
